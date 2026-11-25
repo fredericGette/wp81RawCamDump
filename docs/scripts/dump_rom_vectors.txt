@@ -1,0 +1,53 @@
+# Step 2 (v2): verify MOVC reads the mask ROM. Source address is the immediate of
+# MOV DPTR,#SRC at 0xF916 (bytes 0xF917=hi, 0xF918=lo), rewritten before each
+# stream (v1 read it from 0x35F5 over I2C, but the 8051 MOVX read of 0x35F5
+# returns 0, so every address dumped code[0]).
+#
+# NOTE: do NOT point SRC at the patch RAM 0xF800-0xFAB5: MOVC-reading the region
+# the 8051 is executing from hangs the sensor (recover with sc stop/start). This
+# script dumps mask-ROM addresses only.
+#
+# Each i2cr 0x35F5 32 prints: 2 leftover bytes (0x35F5,0x35F6), then 30 bytes of
+# code memory from the patched address (0x35F7..0x3614).
+# PASS: 0x0000 shows the 8051 vector table (02 0A 02 = LJMP 0x0A02 reset, ...),
+#   and the other addresses return different bytes.
+
+open sensor platform
+sensor 0
+sensor 45 u32:2592 u32:1944 u32:1 u32:1 u32:1 u32:2 u32:256 u32:4050 u32:0 u32:83333
+
+echo == upload DUMPER v2 to 0xF90F
+i2cw 0xF90F 7C 35 7D F7 78 00 E8 90 00 00 93 FB 8D 82 8C 83 EB F0 0D BD 00 01 0C 08 B8 1E EB 90 30 47 74 98
+i2cw 0xF92F F0 90 30 36 74 1E F0 90 30 42 74 24 F0 E5 53 60 06 78 2B 76 01 80 04 78 2B E4 F6 90 30 88 02 1D
+i2cw 0xF94F 4F
+
+echo == dump code at 0x0000 (8051 vector table: expect 02 0A 02 ...)
+i2cw 0xF917 00 00
+sensor 2
+sleep 50
+sensor 3
+i2cr 0x35F5 32
+
+echo == dump code at 0x001E (continue the vector table)
+i2cw 0xF917 00 1E
+sensor 2
+sleep 50
+sensor 3
+i2cr 0x35F5 32
+
+echo == dump code at 0x0A02 (reset vector target)
+i2cw 0xF917 0A 02
+sensor 2
+sleep 50
+sensor 3
+i2cr 0x35F5 32
+
+echo == dump code at 0x1D4F (ROM target of the 0xF90F hook)
+i2cw 0xF917 1D 4F
+sensor 2
+sleep 50
+sensor 3
+i2cr 0x35F5 32
+
+sensor 1
+close

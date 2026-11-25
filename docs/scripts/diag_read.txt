@@ -1,0 +1,5 @@
+open sensor platform
+sensor 0
+i2cr 0x3002 2
+sensor 1
+close

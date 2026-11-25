@@ -1,0 +1,24 @@
+# Does an I2C write to the code RAM take effect on a LATER stream start, or only
+# at the first one after power-on? Upload probe (marker A5->0x35F7 operand @0xF913,
+# 5A->0x3614 operand @0xF919), stream, read. Then re-patch operands to 11/22,
+# stream, read. If 0x35F7=11 and 0x3614=22, re-patching works.
+open sensor platform
+sensor 0
+sensor 45 u32:2592 u32:1944 u32:1 u32:1 u32:1 u32:2 u32:256 u32:4050 u32:0 u32:83333
+i2cw 0xF90F 90 35 F7 74 A5 F0 90 36 14 74 5A F0 90 30 47 74 98 F0 90 30 36 74 1E F0 90 30 42 74 24 F0 E5 53
+i2cw 0xF92F 60 06 78 2B 76 01 80 04 78 2B E4 F6 90 30 88 02 1D 4F
+echo == first stream (expect A5 at 0x35F7, 5A at 0x3614)
+sensor 2
+sleep 50
+sensor 3
+i2cr 0x35F5 32
+echo == re-patch marker operands: 0xF913 -> 11, 0xF919 -> 22
+i2cw 0xF913 11
+i2cw 0xF919 22
+echo == second stream (11 at 0x35F7 and 22 at 0x3614 means re-patch works)
+sensor 2
+sleep 50
+sensor 3
+i2cr 0x35F5 32
+sensor 1
+close

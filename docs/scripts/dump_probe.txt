@@ -1,0 +1,30 @@
+# Step 1: verify the 0xF90F upload-and-execute mechanism (no MOVC yet).
+# Uploads the PROBE routine (docs/sensor_patch/dumper_F90F.txt), streams once,
+# and checks that it wrote the markers 0xA5 -> 0x35F7 and 0x5A -> 0x3614.
+#
+# PASS: after "streamed", 0x35F7 reads A5 and 0x3614 reads 5A.
+# FAIL (no change): I2C writes do not reach the code RAM at runtime; nothing is
+#   damaged. A power off (below) reloads the .dcc and restores the stock patch.
+
+open sensor platform
+sensor 0
+sensor 45 u32:2592 u32:1944 u32:1 u32:1 u32:1 u32:2 u32:256 u32:4050 u32:0 u32:83333
+
+echo == pre-clear the markers
+i2cw 0x35F7 00
+i2cw 0x3614 00
+i2cr 0x35F5 32
+
+echo == upload PROBE to 0xF90F
+i2cw 0xF90F 90 35 F7 74 A5 F0 90 36 14 74 5A F0 90 30 47 74 98 F0 90 30 36 74 1E F0 90 30 42 74 24 F0 E5 53
+i2cw 0xF92F 60 06 78 2B 76 01 80 04 78 2B E4 F6 90 30 88 02 1D 4F
+
+echo == stream start (runs 0xF90F once)
+sensor 2
+sleep 100
+sensor 3
+echo == streamed, read back (expect A5 .. then .. 5A at the end)
+i2cr 0x35F5 32
+
+sensor 1
+close

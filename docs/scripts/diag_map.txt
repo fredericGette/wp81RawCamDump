@@ -1,0 +1,24 @@
+# Map which MOV A,#imm operand positions re-patch after stream1.
+# Markers at 0xF910(+1), 0xF916(+7), 0xF91C(+13). Stream1 -> A0 A1 A2.
+# Re-patch to B0 B1 B2; stream2 shows Bx where free, Ax where frozen.
+open sensor platform
+sensor 0
+sensor 45 u32:2592 u32:1944 u32:1 u32:1 u32:1 u32:2 u32:256 u32:4050 u32:0 u32:83333
+i2cw 0xF90F 74 A0 90 35 F7 F0 74 A1 90 35 F8 F0 74 A2 90 35 F9 F0 90 30 47 74 98 F0 90 30 36 74 1E F0 90 30
+i2cw 0xF92F 42 74 24 F0 E5 53 60 06 78 2B 76 01 80 04 78 2B E4 F6 90 30 88 02 1D 4F
+echo == stream1 (expect A0 A1 A2)
+sensor 2
+sleep 50
+sensor 3
+i2cr 0x35F7 3
+echo == re-patch F910=B0 F916=B1 F91C=B2
+i2cw 0xF910 B0
+i2cw 0xF916 B1
+i2cw 0xF91C B2
+echo == stream2 (Bx=free, Ax=frozen)
+sensor 2
+sleep 50
+sensor 3
+i2cr 0x35F7 3
+sensor 1
+close

@@ -30,8 +30,14 @@ wp81RawCamDump.exe ──DeviceIoControl──> wp81rawcam.sys ──internal IO
                                               └── VcmCreate/Assoc/Reserve/Back ──> qcvcm8930.sys ──> qcsmmu8930.sys
 ```
 
-Reference documentation of the drivers: `Lumia520/content/drivers/` (`qccamsensor8930.md`,
-`qccamvfe8930.md`, `qccamavs8930.md`, `qccamplatform8930.md`, `qcvcm8930.md`, `qcsmmu8930.md`).
+Reference documentation of the drivers ([Lumia520/content/drivers](https://github.com/fredericGette/Lumia520/tree/main/content/drivers)):
+
+- [qccamsensor8930](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/qccamsensor8930.md): sensor, CSI
+- [qccamvfe8930](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/qccamvfe8930.md): VFE, ISPIF
+- [qccamavs8930](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/qccamavs8930.md): AVStream camera driver
+- [qccamplatform8930](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/qccamplatform8930.md): camera platform, I2C
+- [qcvcm8930](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/qcvcm8930.md): virtual contiguous memory
+- [qcsmmu8930](https://github.com/fredericGette/Lumia520/blob/main/content/drivers/qcsmmu8930.md): IOMMU
 
 ## Build
 

@@ -1,0 +1,158 @@
+Sensor ROM dumper: 0xF90F replacement routines (prepared 2026-11-25)
+====================================================================
+
+Idea
+----
+The .dcc patch installs 8051 code at 0xF800-0xFAB5 at every power on, and the
+ROM calls the hook at 0xF90F at each stream start (sensor command 2). The same
+I2C register interface that the .dcc uses to write that code (16-bit address,
+8-bit data, auto-incrementing, sensor slave) can rewrite 0xF90F at runtime,
+AFTER power on and BEFORE stream start. The ROM hook still points at 0xF90F, so
+the next stream start runs whatever we put there.
+
+A MOVC A,@A+DPTR reads the 8051 CODE space. If the mask ROM is in the same code
+space as the patch RAM (it is executed from there), MOVC can read it. The
+replacement routine copies 30 code bytes into the readable scratch block
+0x35F7-0x3614, then performs the original hook's essential work and jumps back
+into the ROM (LJMP 0x1D4F), so the sensor keeps running.
+
+Scratch block (from probe_scratch_regs, README "Scratch registers"):
+  0x35F5 : source address, high byte   (written by the phone over I2C)
+  0x35F6 : source address, low byte
+  0x35F7 - 0x3614 : 30 bytes of code memory written by the routine (read back
+                    over I2C). Reading 0x35F5 for 32 bytes returns the echoed
+                    address followed by the 30 dumped bytes.
+
+Both routines stay inside the original 0xF90F body (0xF90F-0xF971, 99 bytes):
+the probe is 50 bytes (ends 0xF940), the dumper is 76 bytes (ends 0xF95A). They
+never touch 0xF972 or any later hook, OTP (0x0A00-0x0A0C) or SMIA control
+registers. Verified with docs/sensor_patch/verify8051.py (opcode lengths and every
+branch target recomputed from the bytes: PASS).
+
+The reduced "original tail" keeps only the unconditional writes the hook always
+does first (0x3047=0x98, 0x3036=0x1E, 0x3042=0x24), the RAM_53 -> RAM_2B choice,
+and the final MOV DPTR,#0x3088 / LJMP 0x1D4F. It drops the RAM_55==0x22/0x44
+binning sub-branches, which the full-resolution mode used here provably does not
+take (measured 0x3036=0x1E and 0x3042=0x24 at stream start, not 0x46 / 0x64).
+Image quality is irrelevant while dumping; only the LJMP back into the ROM
+matters, and that is preserved.
+
+
+Routine 1: PROBE (verifies upload + execute, no MOVC)
+-----------------------------------------------------
+Writes a marker to the first and last output bytes, then the original tail.
+If, after a stream start, 0x35F7 reads 0xA5 and 0x3614 reads 0x5A, then
+(1) I2C writes to the code RAM stick and execute, and (2) the hook still streams.
+
+  F90F  90 35 F7     MOV   DPTR,#0x35F7
+  F912  74 A5        MOV   A,#0xA5
+  F914  F0           MOVX  @DPTR,A
+  F915  90 36 14     MOV   DPTR,#0x3614
+  F918  74 5A        MOV   A,#0x5A
+  F91A  F0           MOVX  @DPTR,A
+  F91B  90 30 47     MOV   DPTR,#0x3047      ; --- original tail (reduced) ---
+  F91E  74 98        MOV   A,#0x98
+  F920  F0           MOVX  @DPTR,A
+  F921  90 30 36     MOV   DPTR,#0x3036
+  F924  74 1E        MOV   A,#0x1E
+  F926  F0           MOVX  @DPTR,A
+  F927  90 30 42     MOV   DPTR,#0x3042
+  F92A  74 24        MOV   A,#0x24
+  F92C  F0           MOVX  @DPTR,A
+  F92D  E5 53        MOV   A,RAM_53
+  F92F  60 06        JZ    0xF937
+  F931  78 2B        MOV   R0,#0x2B
+  F933  76 01        MOV   @R0,#1           ; RAM_2B = 1
+  F935  80 04        SJMP  0xF93B
+  F937  78 2B        MOV   R0,#0x2B
+  F939  E4           CLR   A
+  F93A  F6           MOV   @R0,A            ; RAM_2B = 0
+  F93B  90 30 88     MOV   DPTR,#0x3088
+  F93E  02 1D 4F     LJMP  0x1D4F
+
+Bytes, in <=32-byte I2C chunks (sensor slave, auto-increment):
+  i2cw 0xF90F  90 35 F7 74 A5 F0 90 36 14 74 5A F0 90 30 47 74 98 F0 90 30 36 74 1E F0 90 30 42 74 24 F0 E5 53
+  i2cw 0xF92F  60 06 78 2B 76 01 80 04 78 2B E4 F6 90 30 88 02 1D 4F
+
+
+Routine 2: DUMPER (copies 30 code bytes via MOVC)
+-------------------------------------------------
+  F90F  90 35 F5     MOV   DPTR,#0x35F5     ; read source address hi
+  F912  E0           MOVX  A,@DPTR
+  F913  FE           MOV   R6,A             ; R6 = addr hi
+  F914  90 35 F6     MOV   DPTR,#0x35F6     ; read source address lo
+  F917  E0           MOVX  A,@DPTR
+  F918  FF           MOV   R7,A             ; R7 = addr lo
+  F919  7C 35        MOV   R4,#0x35         ; R4:R5 = dest = 0x35F7
+  F91B  7D F7        MOV   R5,#0xF7
+  F91D  78 00        MOV   R0,#0            ; R0 = index i
+  F91F  E8           MOV   A,R0             ; loop: A = i
+  F920  8F 82        MOV   DPL,R7           ; DPTR = source base
+  F922  8E 83        MOV   DPH,R6
+  F924  93           MOVC  A,@A+DPTR        ; A = code[addr + i]
+  F925  FB           MOV   R3,A
+  F926  8D 82        MOV   DPL,R5           ; DPTR = dest
+  F928  8C 83        MOV   DPH,R4
+  F92A  EB           MOV   A,R3
+  F92B  F0           MOVX  @DPTR,A          ; store byte
+  F92C  0D           INC   R5               ; dest++ (16-bit)
+  F92D  BD 00 01     CJNE  R5,#0,0xF931
+  F930  0C           INC   R4
+  F931  08           INC   R0               ; i++
+  F932  B8 1E EA     CJNE  R0,#0x1E,0xF91F  ; while i != 30
+  F935  90 30 47     MOV   DPTR,#0x3047     ; --- original tail (reduced) ---
+  F938  74 98        MOV   A,#0x98
+  F93A  F0           MOVX  @DPTR,A
+  F93B  90 30 36     MOV   DPTR,#0x3036
+  F93E  74 1E        MOV   A,#0x1E
+  F940  F0           MOVX  @DPTR,A
+  F941  90 30 42     MOV   DPTR,#0x3042
+  F944  74 24        MOV   A,#0x24
+  F946  F0           MOVX  @DPTR,A
+  F947  E5 53        MOV   A,RAM_53
+  F949  60 06        JZ    0xF951
+  F94B  78 2B        MOV   R0,#0x2B
+  F94D  76 01        MOV   @R0,#1           ; RAM_2B = 1
+  F94F  80 04        SJMP  0xF955
+  F951  78 2B        MOV   R0,#0x2B
+  F953  E4           CLR   A
+  F954  F6           MOV   @R0,A            ; RAM_2B = 0
+  F955  90 30 88     MOV   DPTR,#0x3088
+  F958  02 1D 4F     LJMP  0x1D4F
+
+Bytes, in <=32-byte I2C chunks:
+  i2cw 0xF90F  90 35 F5 E0 FE 90 35 F6 E0 FF 7C 35 7D F7 78 00 E8 8F 82 8E 83 93 FB 8D 82 8C 83 EB F0 0D BD 00
+  i2cw 0xF92F  01 0C 08 B8 1E EA 90 30 47 74 98 F0 90 30 36 74 1E F0 90 30 42 74 24 F0 E5 53 60 06 78 2B 76 01
+  i2cw 0xF94F  80 04 78 2B E4 F6 90 30 88 02 1D 4F
+
+
+Per-chunk dump sequence (host)
+------------------------------
+  (once)  power on, config resolution, upload the dumper bytes
+  (loop)  i2cw 0x35F5 <addr_hi> <addr_lo>   # 16-bit source address, big-endian
+          sensor 2                           # stream start -> runs 0xF90F once
+          sleep 50
+          sensor 3                           # stream stop
+          i2cr 0x35F5 32                     # 2 bytes addr echo + 30 code bytes
+  (end)   power off (reloads the .dcc, restoring the original 0xF90F)
+
+
+Validation plan (before any full dump)
+--------------------------------------
+1. dump_probe.txt      : upload the PROBE, stream, confirm 0x35F7=0xA5 and
+                         0x3614=0x5A. Proves the upload-and-execute mechanism.
+2. dump_rom_vectors.txt : upload the DUMPER, dump address 0x0000 (and 0x0003,
+                         0x1D4F). The 8051 reset/interrupt vector table at 0x0000
+                         is a run of LJMP (0x02 xx xx) / reserved entries; seeing
+                         that pattern proves MOVC reads the real mask ROM.
+If the probe does not change 0x35F7, I2C writes do not reach the code RAM at
+runtime (a download-mode gate), and the approach needs a different trigger -
+nothing is damaged. If a bad upload hangs the sensor, power off the sensor
+(sensor 1) or power-cycle / reboot the phone to reload the .dcc.
+
+Safety envelope
+---------------
+The routines only read code memory (MOVC) and only write: 0x3047, 0x3036,
+0x3042 (the stream registers the original hook writes), RAM_2B, and the scratch
+block 0x35F7-0x3614. They never write OTP/NVM (0x0A00-0x0A0C) or SMIA control
+registers (0x01xx). A power off reloads the .dcc and restores the stock patch.

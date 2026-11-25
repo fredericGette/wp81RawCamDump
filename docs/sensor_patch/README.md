@@ -63,15 +63,55 @@ sensor power on: fine while dumping (no capture). The patch reaches the `0x35xx`
 Proposed use: `0x35F5–0x35F6` = address to dump (big-endian, written over I2C by the phone),
 `0x35F7–0x3614` = 30 bytes of code memory copied by the patch.
 
-## Dumping the ROM: possible approach (not done)
+## Dumping the ROM: working (2026-11-25)
+
+**`MOVC` reads the real mask ROM — confirmed on the phone.** The dump at `0x0000` is a textbook 8051
+vector table (`LJMP 0x0AB7` reset, then interrupt vectors `0x0003/0x000B/…` eight bytes apart) and the
+code calls the same ROM routines the `.dcc` patch calls (`0x224F`, `0x225E`). **Full 16 KB dumped:**
+[../../tools/sensor_rom_dump/rom_0000_3FFF.bin](../../tools/sensor_rom_dump/rom_0000_3FFF.bin)
+— the ROM is 16 KB (`0x0000–0x3FFF`), mirrored 4× across the 64 KB code space (A14/A15 not decoded);
+code in ~`0x0000–0x27FF`, `0x20`-filled data in `0x2800–0x3FFF`. **Complete: every byte MOVC-confirmed,
+0 missing** — pass 1 (~60 min, 147 auto-recovered wedges) left 192 poison-cell bytes `0x00`, and the
+second pass (`dump_pass2.py`, per-byte read at a safe scratch cell) recovered all of them. Driver and
+method: [../../tools/sensor_rom_dump/](../../tools/sensor_rom_dump/).
 
 Routine `0xF90F` runs at each stream start and only writes 3 registers before continuing in the ROM
-(`LJMP 0x1D4F` after setting `DPTR = 0x3088`). A replacement could copy N bytes of code memory
-(`MOVC A,@A+DPTR`) from an address taken from a scratch register into a readable register block, then do
-what the original does and jump to `0x1D4F`. Loop from the phone: write the address, start the stream,
-read the block, stop the stream.
+(`LJMP 0x1D4F` after setting `DPTR = 0x3088`). The replacement copies code memory (`MOVC A,@A+DPTR`)
+from a baked-in address into the readable block, then does the original's essential work and jumps to
+`0x1D4F`. Per chunk: power-cycle (reloads `.dcc`), upload the dumper with the address baked in, start the
+stream, read the block, stop. What the on-phone runs taught us (all in the tool's README):
 
-Unknowns and risks:
+- **The address can't be re-patched mid-session** — the hook code is latched at the first stream start.
+  So the address is baked in and the sensor is power-cycled per chunk (not a scratch register, which the
+  8051 can't read back from an I2C write anyway).
+- **The scratch block is not inert RAM** — arbitrary code bytes written to `0x3600–0x3614` hang the
+  sensor, and a few values hang even `0x35F7–0x35FE`. So each chunk copies only **8 bytes** into
+  `0x35F7–0x35FE`; a payload that still hits a poison value is retried then left for a second pass.
+- **The sensor wedges intermittently after ~25–33 power cycles** in one session and can block a command;
+  the driver runs short batches, times out every call, and recovers by killing the app and bouncing the
+  driver. Throughput ~4.8 B/s (the per-chunk `.dcc` reload dominates).
+
+The replacement is written to the code RAM at runtime over I2C (the same interface the `.dcc` uses at
+power on), after `sensor 0`/`45` and before `sensor 2`. The ROM hook still points at `0xF90F`, so the
+next stream start runs it. Both routines stay inside the original `0xF90F` body (≤ 99 bytes), so no later
+hook is touched, and a `sensor 1` power off reloads the `.dcc` and restores the stock patch.
+
+Prepared files:
+
+- [dumper_F90F.txt](dumper_F90F.txt) — the PROBE and DUMPER routines: annotated disassembly, the byte
+  layout, and the `i2cw` upload chunks. Hand-assembled and checked with `docs/sensor_patch/verify8051.py`
+  (opcode lengths and every branch target recomputed from the bytes: PASS).
+- [../scripts/dump_probe.txt](../scripts/dump_probe.txt) — step 1: upload the PROBE (a marker write, no
+  `MOVC`), stream, and confirm `0x35F7 = 0xA5` / `0x3614 = 0x5A`. Proves I2C writes to the code RAM
+  stick and execute, without risking the `MOVC` unknown.
+- [../scripts/dump_rom_vectors.txt](../scripts/dump_rom_vectors.txt) — step 2: upload the DUMPER and dump
+  `0x0000` (8051 vector table), `0x1D4F`, and `0xF800` (known patch bytes — a self-consistency check,
+  since `i2cr 0xF800` returns zeros but `MOVC` must return the real code). Confirms `MOVC` reads the ROM.
+
+The probe/vector scripts above were the bring-up steps; the full dump is now driven by
+[../../tools/sensor_rom_dump/dump_driver.py](../../tools/sensor_rom_dump/dump_driver.py).
+
+Remaining risks:
 
 - How the ROM reaches the patch routines (hook table not found: the `0xFBD7` table is calibration data).
   Only the effects are known, so a replacement must keep the entry address `0xF90F`.
