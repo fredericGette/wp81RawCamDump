@@ -1,0 +1,112 @@
+  session open, flags 0xF, VFE queue 0x89284CD0
+> sensor 13 in=0 resp=8
+  sensor 13: status=0x00000000 result=0 resp=8
+    out 0000: 03 00 00 00 00 00 00 00
+> sensor 0 in=0 resp=0
+  sensor 0: status=0x00000000 result=0 resp=0
+> sensor 68 in=0 resp=32
+  sensor 68: status=0x00000000 result=0 resp=32
+    out 0000: A3 07 02 06 01 38 44 34 33 44 44 30 30 30 30 30
+    out 0010: 30 30 30 30 30 00 30 31 30 37 41 33 30 32 00 00
+sensor model 1955 (0x7A3)
+> sensor 45 in=40 resp=0
+    in 0000: 20 0A 00 00 98 07 00 00 01 00 00 00 01 00 00 00
+    in 0010: 01 00 00 00 02 00 00 00 00 01 00 00 46 ED 00 00
+    in 0020: 00 00 00 00 60 90 0F 00
+  sensor 45: status=0x00000000 result=0 resp=0
+  i2c 0x0B00 <- 00
+  i2c 0x0B04 <- 00
+  i2c 0x0B05 <- 00
+  i2c 0x0B06 <- 00
+  i2c 0x0B00: 00 00 00 00 00 00 00 00
+  i2c 0x034C: 0A 28 07 9C
+RDI frame 2600 (0xA28) x 1948 (0x79C), stride 3250 (0xCB2), buffer 6408224 (0x61C820)
+> sensor 67 in=12 resp=12
+    in 0000: 00 00 00 00 40 42 0F 00 00 01 00 00
+  sensor 67: status=0x00000000 result=0 resp=12
+    out 0000: 51 85 00 00 26 43 0F 00 00 01 00 00
+> sensor 56 in=4 resp=0
+    in 0000: AB 00 00 00
+  sensor 56: status=0x00000000 result=0 resp=0
+> sensor 55 in=0 resp=4
+  sensor 55: status=0x00000000 result=0 resp=4
+    out 0000: AB 00 00 00
+> vfe 1 in=0 resp=0
+  vfe 1: status=0x00000000 result=0 resp=0
+> vfe 3 in=0 resp=0
+  vfe 3: status=0x00000000 result=0 resp=0
+> vfe 98 in=0 resp=12
+  vfe 98: status=0x00000000 result=0 resp=12
+    out 0000: 0F 00 00 00 04 00 00 00 03 00 00 00
+> vfe 11 in=48 resp=0
+    in 0000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 0010: 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00
+    in 0020: 00 00 00 00 00 00 00 00 00 00 00 00 00 7D 19 00
+  vfe 11: status=0x00000000 result=0 resp=0
+> vfe 7 in=60 resp=0
+    in 0000: 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 0010: 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00
+    in 0020: 00 00 00 00 00 00 00 00 03 00 00 00 03 00 00 00
+    in 0030: 00 00 00 00 00 00 00 00 02 00 00 00
+  vfe 7: status=0x00000000 result=0 resp=0
+> vfe 42 in=3 resp=0
+    in 0000: 00 00 00
+  vfe 42: status=0x00000000 result=0 resp=0
+> vfe 8 in=260 resp=0
+    in 0000: 02 00 00 00 01 00 00 00 60 90 0F 00 00 00 00 00
+    in 0010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 0020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 0030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 0040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 0050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 0060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 0070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 0080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 0090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 00A0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 00B0: 00 00 00 00 00 00 00 00 00 00 00 00 28 0A 9C 07
+    in 00C0: 9C 07 B2 0C 18 00 00 00 01 00 00 00 60 90 0F 00
+    in 00D0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 00E0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in 00F0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+    in ... (260 bytes)
+  vfe 8: status=0x00000000 result=0 resp=0
+  F0: 6410240 bytes at device address 0x00004000
+  F1: 6410240 bytes at device address 0x00621000
+  F2: 6410240 bytes at device address 0x00C3E000
+> vfe 118 in=4 resp=0
+    in 0000: 00 40 00 00
+  vfe 118: status=0x00000000 result=0 resp=0
+> vfe 118 in=4 resp=0
+    in 0000: 00 10 62 00
+  vfe 118: status=0x00000000 result=0 resp=0
+> vfe 118 in=4 resp=0
+    in 0000: 00 E0 C3 00
+  vfe 118: status=0x00000000 result=0 resp=0
+> vfe 4 in=4 resp=0
+    in 0000: 00 00 00 00
+  vfe 4: status=0x00000000 result=0 resp=0
+> sensor 2 in=0 resp=0
+  sensor 2: status=0x00000000 result=0 resp=0
+> vfe 149 in=0 resp=0
+  vfe 149: status=0x00000000 result=0 resp=0
+  VFE message id=10 size=128: 00000000 00004000 00001E6C 079B0004 16C30A26 00000002 16C30A26 00000002 00000000 00000000 00000000 00000000
+  frame skipped in F0 (message id 10)
+  VFE message id=10 size=128: 00000000 00621000 00001E6C 079B0004 175D23BD 00000002 175D23BD 00000002 00000000 00000000 00000000 00000000
+  frame skipped in F1 (message id 10)
+  VFE message id=10 size=128: 00000000 00C3E000 00001E6C 079B0004 17F7466B 00000002 17F7466B 00000002 00000000 00000000 00000000 00000000
+  frame done in F2 (message id 10)
+> vfe 109 in=0 resp=0
+  vfe 109: status=0x00000000 result=0 resp=0
+> vfe 3 in=0 resp=0
+  vfe 3: status=0x00000000 result=0 resp=0
+> vfe 136 in=0 resp=0
+  vfe 136: status=0x00000000 result=0 resp=0
+> vfe 2 in=0 resp=0
+  vfe 2: status=0x00000000 result=0 resp=0
+> sensor 3 in=0 resp=0
+  sensor 3: status=0x00000000 result=0 resp=0
+> sensor 1 in=0 resp=0
+  sensor 1: status=0x00000000 result=0 resp=0
+  saved 6410240 bytes to C:\Data\Users\Public\Documents\rawcam_1s_inf.raw (72986 bytes equal to the last byte 0xCD)
+sidecar C:\Data\Users\Public\Documents\rawcam_1s_inf.raw.txt

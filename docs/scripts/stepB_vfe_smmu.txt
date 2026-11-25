@@ -1,0 +1,16 @@
+# step B: sensor power (CSI/ISPIF clocks), VFE power on + reset, IOMMU attach by the first allocation, detach + power off
+open all
+echo session opened
+sensor 0
+vfe 1
+echo VFE powered
+vfe 3
+echo VFE reset
+vfe 98 resp=12
+alloc F0 0x700000 fill=0xCD
+echo frame allocated at $F0
+vfe 2
+echo VFE powered off
+sensor 1
+close
+echo closed

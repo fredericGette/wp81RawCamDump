@@ -1,0 +1,17 @@
+; Exports of qcvcm8930.sys (Qualcomm VCM / SMMU client export driver) used by wp81rawcam.sys.
+; Names from the export table of the Lumia 520 binary. Import library built by CMake with llvm-lib.
+LIBRARY qcvcm8930.sys
+EXPORTS
+    VcmActivate
+    VcmAssoc
+    VcmBack
+    VcmCreate
+    VcmDeactivate
+    VcmDeassoc
+    VcmFree
+    VcmGetDevAddr
+    VcmMapMdlToPhysmem
+    VcmReserve
+    VcmUnMapMdlFromPhysmem
+    VcmUnback
+    VcmUnreserve

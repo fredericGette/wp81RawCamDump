@@ -1,0 +1,88 @@
+# wp81RawCamDump capture recipe (generated)
+set W 2592
+set H 1944
+set OPMODE 2                # sensor op mode: 1 preview/video, 2 still
+set RDI_AUTO 1            # 1 = RDI frame size read from the sensor output size registers
+set RDI_W 0
+set RDI_H 0
+set RDI_FORMAT 24        # 24 = CSI passthrough, as for the embedded data RDI of qccamavs
+set RAW_SIZE 1          # 0 = 8, 1 = 10, 2 = 12 bits
+set RDI_RATE 1670400    # kbps (qccamavs: 1670400 = 2 lanes x 835.2 Mbps)
+set PIXEL_PATTERN 3       # qccamavs uses 3
+set FRAME_INTERVAL_US 86666
+set EXPOSURE_US 66666
+set LINES 4049             # initial line count (16.463 us per line)
+set GAIN_Q8 256           # ISO 100
+set HAS_LENS 0
+set LENS 0
+set TEST_PATTERN 2
+set NO_CORRECTION 1
+set DROP 2
+
+open all
+sensor 13 resp=8 nocheck                 # CSI state (diagnostic)
+
+# ---- sensor: power, mode, exposure, gain, focus
+sensor 0                                 # POWER_ON
+sensor 68 resp=32                        # GET_SENSOR_IDENTITY
+getu16 MODEL 0
+echo sensor model $MODEL
+# CONFIG_RESOLUTION (40 bytes, layout from the qccamavs trace):
+#   width, height, 1, 1, 1, op mode, gain 8.8, line count, ?, max frame interval (us)
+sensor 45 u32:$W u32:$H u32:1 u32:1 u32:1 u32:$OPMODE u32:$GAIN_Q8 u32:$LINES u32:0 u32:$FRAME_INTERVAL_US
+?NO_CORRECTION i2cw 0x0B00 00              # SMIA shading_correction_enable
+?NO_CORRECTION i2cw 0x0B04 00              # SMIA black_level_correction_enable (1 after power on)
+?NO_CORRECTION i2cw 0x0B05 00              # SMIA mapped_defect_correction_enable (1 after power on)
+?NO_CORRECTION i2cw 0x0B06 00              # SMIA single_defect_correction_enable
+i2cr 0x0B00 8                            # corrections now in effect
+# Frame size: SMIA output size of the selected mode (x_output_size, y_output_size)
+i2cr 0x034C 4
+?RDI_AUTO set RDI_W $I2C0*256+$I2C1
+?RDI_AUTO set RDI_H $I2C2*256+$I2C3
+set RDI_STRIDE $RDI_W*10/8       # packed row bytes
+set FRAME_BYTES $RDI_STRIDE+7/8*8*$RDI_H+65536   # left to right: row increment x lines + margin
+echo RDI frame $RDI_W x $RDI_H, stride $RDI_STRIDE, buffer $FRAME_BYTES
+?TEST_PATTERN i2cw 0x0600 u8:0 u8:$TEST_PATTERN   # SMIA test_pattern_mode
+# MANUAL_EXPOSURE: +4 exposure (us), +8 analog gain 8.8; applied at once if streaming, else at stream start
+sensor 67 u32:0 u32:$EXPOSURE_US u16:$GAIN_Q8 u16:0 resp=12
+getu32 EXPOSURE_READ 4
+getu16 GAIN_READ 8
+?HAS_LENS sensor 56 u32:$LENS              # SET_LENS_POSITION
+?HAS_LENS sensor 55 resp=4                 # GET_LENS_POSITION
+?HAS_LENS getu32 LENS_READ 0
+
+# ---- VFE: RDI0 only (ISPIF mode 0), no pixel pipeline
+vfe 1                                    # POWER_ON
+vfe 3                                    # RESET
+vfe 98 resp=12                           # GET_HW_VERSION
+vfe 11 u32:0 u32:0 z16 01000000000000000000000000000000 u32:0 u32:$RDI_RATE   # ISPIF_CONFIG (48 bytes)
+# OPERATION_CONFIG: raw size, path types (out1-3, camif raw, ideal raw, RDI0-2), input CAMIF,
+# pixel pattern, then +0x2C 3, +0x30 0, +0x34 composite stats 0, +0x38 2 (values of qccamavs)
+vfe 7 u32:$RAW_SIZE u32:0 u32:0 u32:0 u32:0 u32:0 u32:1 u32:0 u32:0 u32:0 u32:$PIXEL_PATTERN u32:3 u32:0 u8:0 z3 u32:2
+vfe 42 u8:0 u8:0 u8:0                    # RDI_CONFIG: no frame skip
+# AXI_OUTPUT_CONFIG (260 bytes): burst 2, stats class 1, frame interval; only the RDI0 path at +0xBC:
+#   width, height, buffer height, stride (bytes), format, raw size, frame interval (us)
+vfe 8 u32:2 u32:1 u32:$FRAME_INTERVAL_US z108 u32:0 u16:0 u16:0 u32:0 u32:0 u32:0 z24 z24 u16:$RDI_W u16:$RDI_H u16:$RDI_H u16:$RDI_STRIDE u32:$RDI_FORMAT u32:$RAW_SIZE u32:$FRAME_INTERVAL_US u8:0 z3 z24 z24
+alloc F0 $FRAME_BYTES fill=0xCD
+alloc F1 $FRAME_BYTES fill=0xCD
+alloc F2 $FRAME_BYTES fill=0xCD
+vfe 118 u32:$F0                          # RDI0_BUFFER_ENQUEUE
+vfe 118 u32:$F1
+vfe 118 u32:$F2
+
+# ---- stream (same order as qccamavs)
+vfe 4 u32:0                              # START
+sensor 2                                 # START_STREAM
+vfe 149 nocheck                          # START_CAPTURE_ACK_REQUEST
+# Keep the frame after DROP others (the new exposure takes a few frames); skipped buffers are re-enqueued.
+waitframe F0 F1 F2 skip=$DROP requeue=118 timeout=3544
+
+# ---- teardown (the driver also does it if the script fails)
+vfe 109 nocheck                          # STOP
+vfe 3 nocheck                            # RESET
+vfe 136 nocheck                          # RDI0_OUTPUT_FLUSH_BUFFER_QUEUE
+vfe 2                                    # POWER_OFF
+sensor 3 nocheck                         # STOP_STREAM
+sensor 1                                 # POWER_OFF
+save FRAME C:\Data\Users\Public\Documents\rawcam.raw
+close

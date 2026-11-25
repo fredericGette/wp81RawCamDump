@@ -1,0 +1,40 @@
+open sensor platform
+sensor 0
+echo -- after power on
+i2cr 0x3047 1
+i2cr 0x3036 1
+i2cr 0x3042 1
+i2cr 0x3E44 1
+i2cr 0x30F0 2
+i2cr 0x30F8 2
+i2cr 0x35B5 1
+sensor 45 u32:2592 u32:1944 u32:1 u32:1 u32:1 u32:2 u32:256 u32:4050 u32:0 u32:83333
+echo -- after CONFIG_RESOLUTION
+i2cr 0x3047 1
+i2cr 0x3036 1
+i2cr 0x3042 1
+i2cr 0x3E44 1
+i2cr 0x30F0 2
+i2cr 0x30F8 2
+i2cr 0x35B5 1
+sensor 2
+sleep 500
+echo -- streaming
+i2cr 0x3047 1
+i2cr 0x3036 1
+i2cr 0x3042 1
+i2cr 0x3E44 1
+i2cr 0x30F0 2
+i2cr 0x30F8 2
+i2cr 0x35B5 1
+sensor 3
+echo -- stopped
+i2cr 0x3047 1
+i2cr 0x3036 1
+i2cr 0x3042 1
+i2cr 0x3E44 1
+i2cr 0x30F0 2
+i2cr 0x30F8 2
+i2cr 0x35B5 1
+sensor 1
+close

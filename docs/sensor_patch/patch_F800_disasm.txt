@@ -1,0 +1,350 @@
+F800  C0 24                    push    RAM_24
+F802  7C FB                    mov     R4, #0xFB
+F804  7D C7                    mov     R5, #0xC7
+F806  7B 10                    mov     R3, #0x10
+F808  7F 72                    mov     R7, #0x72 ; 'r'
+F80A  7E 30                    mov     R6, #0x30 ; '0'
+F80C  12 09 47                 lcall   code_947
+F80F  D0 24                    pop     RAM_24
+F811  90 02 05                 mov     DPTR, #0x205
+F814  E0                       movx    A, @DPTR
+F815  F5 77                    mov     RAM_77, A
+F817  E5 77                    mov     A, RAM_77
+F819  C3                       clr     C
+F81A  94 80                    subb    A, #0x80
+F81C  50 08                    jnc     code_F826
+F81E  75 7A FB                 mov     RAM_7A, #0xFB
+F821  75 7B D7                 mov     RAM_7B, #0xD7
+F824  80 33                    sjmp    code_F859
+F826  E5 77                    mov     A, RAM_77
+F828  C3                       clr     C
+F829  94 C0                    subb    A, #0xC0
+F82B  50 08                    jnc     code_F835
+F82D  75 7A FB                 mov     RAM_7A, #0xFB
+F830  75 7B DB                 mov     RAM_7B, #0xDB
+F833  80 24                    sjmp    code_F859
+F835  E5 77                    mov     A, RAM_77
+F837  C3                       clr     C
+F838  94 E0                    subb    A, #0xE0
+F83A  50 08                    jnc     code_F844
+F83C  75 7A FB                 mov     RAM_7A, #0xFB
+F83F  75 7B DF                 mov     RAM_7B, #0xDF
+F842  80 15                    sjmp    code_F859
+F844  E5 77                    mov     A, RAM_77
+F846  C3                       clr     C
+F847  94 F0                    subb    A, #0xF0
+F849  50 08                    jnc     code_F853
+F84B  75 7A FB                 mov     RAM_7A, #0xFB
+F84E  75 7B E3                 mov     RAM_7B, #0xE3
+F851  80 06                    sjmp    code_F859
+F853  75 7A FB                 mov     RAM_7A, #0xFB
+F856  75 7B E7                 mov     RAM_7B, #0xE7
+F859  E5 55                    mov     A, RAM_55
+F85B  7F 00                    mov     R7, #0
+F85D  B4 22 02                 cjne    A, #0x22, code_F862 ; '"'
+F860  7F 01                    mov     R7, #1
+F862  E5 53                    mov     A, RAM_53
+F864  5F                       anl     A, R7
+F865  60 05                    jz      code_F86C
+F867  74 14                    mov     A, #0x14
+F869  12 FA 6C                 lcall   code_FA6C
+F86C  75 7C FB                 mov     RAM_7C, #0xFB
+F86F  75 7D C7                 mov     RAM_7D, #0xC7
+F872  75 7E 30                 mov     RAM_7E, #0x30 ; '0'
+F875  75 7F 62                 mov     RAM_7F, #0x62 ; 'b'
+F878  E4                       clr     A
+F879  F5 77                    mov     RAM_77, A
+F87B  E5 77                    mov     A, RAM_77
+F87D  C3                       clr     C
+F87E  94 08                    subb    A, #8
+F880  40 03                    jc      code_F885
+F882  02 F9 0E                 ljmp    code_F90E
+F885  85 7D 82                 mov     DPL, RAM_7D; Data Pointer, Low Byte
+F888  85 7C 83                 mov     DPH, RAM_7C; Data Pointer, High Byte
+F88B  E0                       movx    A, @DPTR
+F88C  FE                       mov     R6, A
+F88D  A3                       inc     DPTR
+F88E  E0                       movx    A, @DPTR
+F88F  FF                       mov     R7, A
+F890  12 21 22                 lcall   code_2122
+F893  8E 78                    mov     RAM_78, R6
+F895  8F 79                    mov     RAM_79, R7
+F897  12 FA 60                 lcall   code_FA60
+F89A  12 22 93                 lcall   code_2293
+F89D  50 07                    jnc     code_F8A6
+F89F  E4                       clr     A
+F8A0  F5 78                    mov     RAM_78, A
+F8A2  F5 79                    mov     RAM_79, A
+F8A4  80 33                    sjmp    code_F8D9
+F8A6  12 FA 60                 lcall   code_FA60
+F8A9  7B 01                    mov     R3, #1
+F8AB  AF 79                    mov     R7, RAM_79
+F8AD  AE 78                    mov     R6, RAM_78
+F8AF  12 22 4F                 lcall   code_224F
+F8B2  74 02                    mov     A, #2
+F8B4  12 FA 6C                 lcall   code_FA6C
+F8B7  85 7B 82                 mov     DPL, RAM_7B; Data Pointer, Low Byte
+F8BA  F5 83                    mov     DPH, A; Data Pointer, High Byte
+F8BC  E0                       movx    A, @DPTR
+F8BD  FE                       mov     R6, A
+F8BE  A3                       inc     DPTR
+F8BF  E0                       movx    A, @DPTR
+F8C0  FF                       mov     R7, A
+F8C1  7D 03                    mov     R5, #3
+F8C3  12 17 D8                 lcall   code_17D8
+F8C6  12 1B 9B                 lcall   code_1B9B
+F8C9  8E 78                    mov     RAM_78, R6
+F8CB  8F 79                    mov     RAM_79, R7
+F8CD  74 FE                    mov     A, #0xFE
+F8CF  25 7B                    add     A, RAM_7B
+F8D1  F5 7B                    mov     RAM_7B, A
+F8D3  74 FF                    mov     A, #0xFF
+F8D5  35 7A                    addc    A, RAM_7A
+F8D7  F5 7A                    mov     RAM_7A, A
+F8D9  78 24                    mov     R0, #0x24 ; '$'
+F8DB  E6                       mov     A, @R0
+F8DC  FF                       mov     R7, A
+F8DD  C3                       clr     C
+F8DE  74 20                    mov     A, #0x20 ; ' '
+F8E0  9F                       subb    A, R7
+F8E1  7E 00                    mov     R6, #0
+F8E3  25 79                    add     A, RAM_79
+F8E5  FF                       mov     R7, A
+F8E6  EE                       mov     A, R6
+F8E7  35 78                    addc    A, RAM_78
+F8E9  85 7F 82                 mov     DPL, RAM_7F; Data Pointer, Low Byte
+F8EC  85 7E 83                 mov     DPH, RAM_7E; Data Pointer, High Byte
+F8EF  F0                       movx    @DPTR, A
+F8F0  A3                       inc     DPTR
+F8F1  EF                       mov     A, R7
+F8F2  F0                       movx    @DPTR, A
+F8F3  05 77                    inc     RAM_77
+F8F5  74 02                    mov     A, #2
+F8F7  25 7D                    add     A, RAM_7D
+F8F9  F5 7D                    mov     RAM_7D, A
+F8FB  E4                       clr     A
+F8FC  35 7C                    addc    A, RAM_7C
+F8FE  F5 7C                    mov     RAM_7C, A
+F900  74 02                    mov     A, #2
+F902  25 7F                    add     A, RAM_7F
+F904  F5 7F                    mov     RAM_7F, A
+F906  E4                       clr     A
+F907  35 7E                    addc    A, RAM_7E
+F909  F5 7E                    mov     RAM_7E, A
+F90B  02 F8 7B                 ljmp    code_F87B
+F90E  22                       ret
+F90F  90 30 47                 mov     DPTR, #0x3047
+F912  74 98                    mov     A, #0x98
+F914  F0                       movx    @DPTR, A
+F915  90 30 36                 mov     DPTR, #0x3036
+F918  74 1E                    mov     A, #0x1E
+F91A  F0                       movx    @DPTR, A
+F91B  90 30 42                 mov     DPTR, #0x3042
+F91E  74 24                    mov     A, #0x24 ; '$'
+F920  F0                       movx    @DPTR, A
+F921  E5 53                    mov     A, RAM_53
+F923  60 42                    jz      code_F967
+F925  78 2B                    mov     R0, #0x2B ; '+'
+F927  76 01                    mov     @R0, #1
+F929  E5 55                    mov     A, RAM_55
+F92B  B4 22 17                 cjne    A, #0x22, code_F945 ; '"'
+F92E  90 30 36                 mov     DPTR, #0x3036
+F931  74 46                    mov     A, #0x46 ; 'F'
+F933  F0                       movx    @DPTR, A
+F934  78 28                    mov     R0, #0x28 ; '('
+F936  76 31                    mov     @R0, #0x31 ; '1'
+F938  90 30 0E                 mov     DPTR, #0x300E
+F93B  E0                       movx    A, @DPTR
+F93C  C3                       clr     C
+F93D  13                       rrc     A
+F93E  30 E0 04                 jnb     ACC.0, code_F945; Accumulator
+F941  78 26                    mov     R0, #0x26 ; '&'
+F943  76 40                    mov     @R0, #0x40 ; '@'
+F945  E5 55                    mov     A, RAM_55
+F947  B4 44 21                 cjne    A, #0x44, code_F96B ; 'D'
+F94A  90 30 47                 mov     DPTR, #0x3047
+F94D  74 9A                    mov     A, #0x9A
+F94F  F0                       movx    @DPTR, A
+F950  90 30 42                 mov     DPTR, #0x3042
+F953  74 64                    mov     A, #0x64 ; 'd'
+F955  F0                       movx    @DPTR, A
+F956  90 30 0E                 mov     DPTR, #0x300E
+F959  E0                       movx    A, @DPTR
+F95A  13                       rrc     A
+F95B  13                       rrc     A
+F95C  54 3F                    anl     A, #0x3F
+F95E  30 E0 0A                 jnb     ACC.0, code_F96B; Accumulator
+F961  78 24                    mov     R0, #0x24 ; '$'
+F963  E4                       clr     A
+F964  F6                       mov     @R0, A
+F965  80 04                    sjmp    code_F96B
+F967  78 2B                    mov     R0, #0x2B ; '+'
+F969  E4                       clr     A
+F96A  F6                       mov     @R0, A
+F96B  90 30 88                 mov     DPTR, #0x3088
+F96E  02 1D 4F                 ljmp    code_1D4F
+F971  22                       ret
+F972  90 0C 1A                 mov     DPTR, #0xC1A
+F975  E0                       movx    A, @DPTR
+F976  30 E2 18                 jnb     ACC.2, code_F991; Accumulator
+F979  90 33 68                 mov     DPTR, #0x3368
+F97C  E0                       movx    A, @DPTR
+F97D  64 05                    xrl     A, #5
+F97F  70 2F                    jnz     code_F9B0
+F981  90 30 38                 mov     DPTR, #0x3038
+F984  E0                       movx    A, @DPTR
+F985  70 02                    jnz     code_F989
+F987  A3                       inc     DPTR
+F988  E0                       movx    A, @DPTR
+F989  C3                       clr     C
+F98A  70 01                    jnz     code_F98D
+F98C  D3                       setb    C
+F98D  40 21                    jc      code_F9B0
+F98F  80 1B                    sjmp    code_F9AC
+F991  90 33 68                 mov     DPTR, #0x3368
+F994  E0                       movx    A, @DPTR
+F995  B4 05 18                 cjne    A, #5, code_F9B0
+F998  C3                       clr     C
+F999  90 30 3B                 mov     DPTR, #0x303B
+F99C  E0                       movx    A, @DPTR
+F99D  94 0D                    subb    A, #0xD
+F99F  90 30 3A                 mov     DPTR, #0x303A
+F9A2  E0                       movx    A, @DPTR
+F9A3  94 00                    subb    A, #0
+F9A5  50 02                    jnc     code_F9A9
+F9A7  80 01                    sjmp    code_F9AA
+F9A9  C3                       clr     C
+F9AA  40 04                    jc      code_F9B0
+F9AC  75 10 01                 mov     RAM_10, #1
+F9AF  22                       ret
+F9B0  02 16 E1                 ljmp    code_16E1
+F9B3  22                       ret
+F9B4  90 FF 33                 mov     DPTR, #0xFF33
+F9B7  E0                       movx    A, @DPTR
+F9B8  90 FF 34                 mov     DPTR, #0xFF34
+F9BB  E0                       movx    A, @DPTR
+F9BC  60 0D                    jz      code_F9CB
+F9BE  7C FB                    mov     R4, #0xFB
+F9C0  7D D7                    mov     R5, #0xD7
+F9C2  7B 28                    mov     R3, #0x28 ; '('
+F9C4  7F 34                    mov     R7, #0x34 ; '4'
+F9C6  7E FF                    mov     R6, #0xFF
+F9C8  12 09 47                 lcall   code_947
+F9CB  7F 20                    mov     R7, #0x20 ; ' '
+F9CD  7E 01                    mov     R6, #1
+F9CF  7D 00                    mov     R5, #0
+F9D1  7C 00                    mov     R4, #0
+F9D3  12 12 A4                 lcall   code_12A4
+F9D6  E4                       clr     A
+F9D7  90 3E 44                 mov     DPTR, #0x3E44
+F9DA  F0                       movx    @DPTR, A
+F9DB  02 16 7E                 ljmp    code_167E
+F9DE  22                       ret
+F9DF  E5 44                    mov     A, RAM_44
+F9E1  60 10                    jz      code_F9F3
+F9E3  90 F6 2C                 mov     DPTR, #0xF62C
+F9E6  74 04                    mov     A, #4
+F9E8  F0                       movx    @DPTR, A
+F9E9  90 F6 34                 mov     DPTR, #0xF634
+F9EC  F0                       movx    @DPTR, A
+F9ED  90 F6 3C                 mov     DPTR, #0xF63C
+F9F0  F0                       movx    @DPTR, A
+F9F1  80 0E                    sjmp    code_FA01
+F9F3  90 F5 C0                 mov     DPTR, #0xF5C0
+F9F6  74 04                    mov     A, #4
+F9F8  F0                       movx    @DPTR, A
+F9F9  90 F5 C8                 mov     DPTR, #0xF5C8
+F9FC  F0                       movx    @DPTR, A
+F9FD  90 F5 D0                 mov     DPTR, #0xF5D0
+FA00  F0                       movx    @DPTR, A
+FA01  90 FB 7F                 mov     DPTR, #0xFB7F
+FA04  02 19 0B                 ljmp    code_190B
+FA07  22                       ret
+FA08  90 0C 1A                 mov     DPTR, #0xC1A
+FA0B  E0                       movx    A, @DPTR
+FA0C  20 E2 15                 jb      ACC.2, code_FA24; Accumulator
+FA0F  E4                       clr     A
+FA10  90 30 F8                 mov     DPTR, #0x30F8
+FA13  F0                       movx    @DPTR, A
+FA14  A3                       inc     DPTR
+FA15  F0                       movx    @DPTR, A
+FA16  90 30 F1                 mov     DPTR, #0x30F1
+FA19  E0                       movx    A, @DPTR
+FA1A  44 08                    orl     A, #8
+FA1C  F0                       movx    @DPTR, A
+FA1D  90 30 F0                 mov     DPTR, #0x30F0
+FA20  E0                       movx    A, @DPTR
+FA21  44 08                    orl     A, #8
+FA23  F0                       movx    @DPTR, A
+FA24  02 03 DE                 ljmp    code_3DE
+FA27  22                       ret
+FA28  90 34 42                 mov     DPTR, #0x3442
+FA2B  E0                       movx    A, @DPTR
+FA2C  30 E0 15                 jnb     ACC.0, code_FA44; Accumulator
+FA2F  E5 46                    mov     A, RAM_46
+FA31  30 E2 F4                 jnb     ACC.2, code_FA28; Accumulator
+FA34  90 36 1E                 mov     DPTR, #0x361E
+FA37  74 FF                    mov     A, #0xFF
+FA39  F0                       movx    @DPTR, A
+FA3A  78 23                    mov     R0, #0x23 ; '#'
+FA3C  E6                       mov     A, @R0
+FA3D  F5 75                    mov     RAM_75, A
+FA3F  08                       inc     R0
+FA40  E6                       mov     A, @R0
+FA41  F5 76                    mov     RAM_76, A
+FA43  22                       ret
+FA44  02 11 C1                 ljmp    code_11C1
+FA47  22                       ret
+FA48  90 0C 1A                 mov     DPTR, #0xC1A
+FA4B  E0                       movx    A, @DPTR
+FA4C  30 E2 0D                 jnb     ACC.2, code_FA5C; Accumulator
+FA4F  E0                       movx    A, @DPTR
+FA50  20 E0 06                 jb      ACC.0, code_FA59; Accumulator
+FA53  90 FB 85                 mov     DPTR, #0xFB85
+FA56  74 00                    mov     A, #0
+FA59  12 16 A0                 lcall   code_16A0
+FA5C  02 18 AC                 ljmp    code_18AC
+FA5F  22                       ret
+FA60  85 7B 82                 mov     DPL, RAM_7B; Data Pointer, Low Byte
+FA63  85 7A 83                 mov     DPH, RAM_7A; Data Pointer, High Byte
+FA66  E0                       movx    A, @DPTR
+FA67  FC                       mov     R4, A
+FA68  A3                       inc     DPTR
+FA69  E0                       movx    A, @DPTR
+FA6A  FD                       mov     R5, A
+FA6B  22                       ret
+FA6C  25 7B                    add     A, RAM_7B
+FA6E  F5 7B                    mov     RAM_7B, A
+FA70  E4                       clr     A
+FA71  35 7A                    addc    A, RAM_7A
+FA73  F5 7A                    mov     RAM_7A, A
+FA75  22                       ret
+FA76  C0 D0                    push    PSW; Program Status Word Register
+FA78  90 35 B5                 mov     DPTR, #0x35B5
+FA7B  E0                       movx    A, @DPTR
+FA7C  54 FC                    anl     A, #0xFC
+FA7E  44 01                    orl     A, #1
+FA80  F0                       movx    @DPTR, A
+FA81  12 1F 5F                 lcall   code_1F5F
+FA84  D0 D0                    pop     PSW; Program Status Word Register
+FA86  02 0A 16                 ljmp    code_A16
+FA89  22                       ret
+FA8A  90 0C 1A                 mov     DPTR, #0xC1A
+FA8D  E0                       movx    A, @DPTR
+FA8E  20 E0 06                 jb      ACC.0, code_FA97; Accumulator
+FA91  90 FB 85                 mov     DPTR, #0xFB85
+FA94  74 00                    mov     A, #0
+FA97  E5 10                    mov     A, RAM_10
+FA99  02 1E 8F                 ljmp    code_1E8F
+FA9C  22                       ret
+FA9D  90 FB 85                 mov     DPTR, #0xFB85
+FAA0  74 00                    mov     A, #0
+FAA3  E5 1A                    mov     A, RAM_1A
+FAA5  60 03                    jz      code_FAAA
+FAA7  02 17 47                 ljmp    code_1747
+FAAA  22                       ret
+FAAB  90 FB 84                 mov     DPTR, #0xFB84
+FAAE  02 18 D9                 ljmp    code_18D9
+FAB1  22                       ret
+FAB2  02 1F B1                 ljmp    code_1FB1
+FAB5  22                       ret

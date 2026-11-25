@@ -1,0 +1,28 @@
+open sensor platform
+sensor 0
+sensor 45 u32:2592 u32:1944 u32:1 u32:1 u32:1 u32:2 u32:256 u32:4050 u32:0 u32:83333
+sensor 2
+sensor 67 u32:0 u32:66666 u16:256 u16:0 resp=12
+sleep 300
+i2cr 0x0204 2
+i2cr 0x3062 16
+sensor 67 u32:0 u32:66666 u16:512 u16:0 resp=12
+sleep 300
+i2cr 0x0204 2
+i2cr 0x3062 16
+sensor 67 u32:0 u32:66666 u16:1024 u16:0 resp=12
+sleep 300
+i2cr 0x0204 2
+i2cr 0x3062 16
+sensor 67 u32:0 u32:66666 u16:2048 u16:0 resp=12
+sleep 300
+i2cr 0x0204 2
+i2cr 0x3062 16
+sensor 67 u32:0 u32:66666 u16:4096 u16:0 resp=12
+sleep 300
+i2cr 0x0204 2
+i2cr 0x3062 16
+i2cr 0x3072 16
+sensor 3
+sensor 1
+close

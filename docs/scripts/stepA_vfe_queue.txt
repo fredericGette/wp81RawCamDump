@@ -1,0 +1,5 @@
+# step A: VFE device and its message queue only (no power, no SMMU)
+open sensor vfe platform
+echo session opened
+close
+echo closed
