@@ -70,10 +70,14 @@ vector table (`LJMP 0x0AB7` reset, then interrupt vectors `0x0003/0x000B/…` ei
 code calls the same ROM routines the `.dcc` patch calls (`0x224F`, `0x225E`). **Full 16 KB dumped:**
 [../../tools/sensor_rom_dump/rom_0000_3FFF.bin](../../tools/sensor_rom_dump/rom_0000_3FFF.bin)
 — the ROM is 16 KB (`0x0000–0x3FFF`), mirrored 4× across the 64 KB code space (A14/A15 not decoded);
-code in ~`0x0000–0x27FF`, `0x20`-filled data in `0x2800–0x3FFF`. **Complete: every byte MOVC-confirmed,
-0 missing** — pass 1 (~60 min, 147 auto-recovered wedges) left 192 poison-cell bytes `0x00`, and the
-second pass (`dump_pass2.py`, per-byte read at a safe scratch cell) recovered all of them. Driver and
-method: [../../tools/sensor_rom_dump/](../../tools/sensor_rom_dump/).
+code in ~`0x0000–0x27FF`, a repeated 32-byte filler pattern in `0x2800–0x3FFF`. Current dump md5
+`9fbba61337189c444d267004daccbf6c`. Getting there took three stages: pass 1 (~60 min, 147 auto-recovered
+wedges); a second pass (`dump_pass2.py`, per-byte read at a safe scratch cell) that recovered the 192
+poison-cell bytes left `0x00`; and a stale-read-back fix — 23 eight-byte blocks had returned the stock
+`.dcc` scratch value `55 1D 4C 16 C7 1A A0 18` (the dumper hadn't run on those stream starts, and the
+old driver accepted the read-back). Both scripts now reject stale read-backs, and the blocks were re-read
+on the phone. The code area was still read only once, so individual bytes aren't double-confirmed. Driver,
+method and the full reliability notes: [../../tools/sensor_rom_dump/](../../tools/sensor_rom_dump/).
 
 Routine `0xF90F` runs at each stream start and only writes 3 registers before continuing in the ROM
 (`LJMP 0x1D4F` after setting `DPTR = 0x3088`). The replacement copies code memory (`MOVC A,@A+DPTR`)
@@ -89,7 +93,7 @@ stream, read the block, stop. What the on-phone runs taught us (all in the tool'
   `0x35F7–0x35FE`; a payload that still hits a poison value is retried then left for a second pass.
 - **The sensor wedges intermittently after ~25–33 power cycles** in one session and can block a command;
   the driver runs short batches, times out every call, and recovers by killing the app and bouncing the
-  driver. Throughput ~4.8 B/s (the per-chunk `.dcc` reload dominates).
+  driver. Throughput ~4.6 B/s (the per-chunk `.dcc` reload dominates).
 
 The replacement is written to the code RAM at runtime over I2C (the same interface the `.dcc` uses at
 power on), after `sensor 0`/`45` and before `sensor 2`. The ROM hook still points at `0xF90F`, so the

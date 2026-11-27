@@ -4,3 +4,18 @@ build/
 *.pvk
 *.etl
 samples/
+
+# IDA Pro databases (regenerable from the .bin)
+*.i64
+*.idb
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
+
+# Python cache and transient dumper scripts
+__pycache__/
+*.pyc
+tools/sensor_rom_dump/p2.txt
+tools/sensor_rom_dump/batch.txt

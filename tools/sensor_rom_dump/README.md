@@ -12,14 +12,15 @@ register block, which the phone reads back over I2C. See
   table (`LJMP 0x0AB7` reset + interrupt vectors at `0x0003/0x000B/0x0013/0x001B/0x0023/0x002B`,
   8 bytes apart, each a valid `LJMP`), and the code calls the same ROM routines
   the `.dcc` patch calls (`0x224F`, `0x225E`, ...).
-- **Full 16 KB dumped, complete: `rom_0000_3FFF.bin`** (coverage
-  `rom_0000_3FFF.cov`, 1 byte per address, all 1). The ROM is 16 KB
-  (`0x0000-0x3FFF`), mirrored 4x across the 64 KB code space (A14/A15 not decoded).
-  Code occupies roughly `0x0000-0x27FF`; `0x2800-0x3FFF` is `0x20`-filled data.
-  **Every byte is MOVC-confirmed — 0 missing.** Pass 1 left 192 bytes on poison
-  cells as `0x00`; the second pass (`dump_pass2.py`) recovered all of them (274
-  real bytes re-read across 37 candidate blocks, 0 unrecoverable; the remaining
-  zeros are genuine ROM content). md5 `bf9e19d7a1dd03b07dd10622208820b6`.
+- **Full 16 KB dumped: `rom_0000_3FFF.bin`** (coverage `rom_0000_3FFF.cov`, 1 byte
+  per address, all 1 — no address left unread). The ROM is 16 KB (`0x0000-0x3FFF`),
+  mirrored 4x across the 64 KB code space (A14/A15 not decoded). Code occupies
+  roughly `0x0000-0x27FF`; `0x2800-0x3FFF` is a repeated 32-byte filler pattern.
+  Pass 1 left 192 bytes on poison cells as `0x00`; the second pass (`dump_pass2.py`)
+  recovered all of them (274 real bytes re-read across 37 candidate blocks, 0
+  unrecoverable). That first dump was md5 `bf9e19d7a1dd03b07dd10622208820b6` — but
+  it still had stale read-backs (next point); the authoritative dump is the
+  stale-fixed `9fbba61337189c444d267004daccbf6c`.
 - **But 23 blocks of 8 bytes are stale (found 2026-11-25).** They read
   `55 1D 4C 16 C7 1A A0 18`, the stock `.dcc` value of `0x35F7-0x35FE`: the
   dumper didn't run on that stream start, and the old driver accepted the
